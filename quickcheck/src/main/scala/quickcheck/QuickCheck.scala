@@ -37,8 +37,7 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
   // insert two Ints, delete min, check that larger is current min
   property("insert 3 Ints and delete -> findMin should return 2nd largest") = forAll { (a: A, b: A, c: A) =>
     val middleInt = List(a, b, c).sorted.tail.head
-    val h = deleteMin(insert(a, insert(b, empty)))
-    //    println(s"a $a b $b max $middleInt h $h")
+    val h = deleteMin(insert(c, insert(a, insert(b, empty))))
     middleInt == findMin(h)
   }
 
@@ -50,5 +49,29 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     minInt == findMin(h)
   }
 
+  // generate list and push it to heap, check that it is returned in sorted order
+  property("heap is sorted") = forAll { as: List[A] =>
+    @scala.annotation.tailrec
+    def loop(ns: List[A], h: H): H = ns match {
+      case Nil => h
+      case x :: xs => loop(xs, insert(x, h))
+    }
+
+    val heap = loop(as, empty)
+
+    def heapToList(heap: H): List[A] = {
+      @scala.annotation.tailrec
+      def loop(h: H, acc: List[A]): List[A] = h match {
+        case h if isEmpty(h) => acc.reverse // sorted high-low so must reverse
+        case h => loop(deleteMin(h), findMin(h) :: acc)
+      }
+
+      loop(heap, List())
+    }
+
+    val heapAsList = heapToList(heap)
+    as.sorted == heapAsList
+
+  }
 
 }

@@ -8,7 +8,8 @@ trait Solver extends GameDef {
   /**
    * Returns `true` if the block `b` is at the final position
    */
-  def done(b: Block): Boolean = ???
+//  def done(b: Block): Boolean = ???
+  def done(b: Block): Boolean = goal == b.b1 && goal == b.b2
 
   /**
    * This function takes two arguments: the current block `b` and
@@ -26,15 +27,26 @@ trait Solver extends GameDef {
    * It should only return valid neighbors, i.e. block positions
    * that are inside the terrain.
    */
-  def neighborsWithHistory(b: Block, history: List[Move]): LazyList[(Block, List[Move])] = ???
+  //  def neighborsWithHistory(b: Block, history: List[Move]): LazyList[(Block, List[Move])] = ???
+  def neighborsWithHistory(b: Block, history: List[Move]): LazyList[(Block, List[Move])] = {
+    b.legalNeighbors.map(blockAndMove => (blockAndMove._1, blockAndMove._2 :: history)).to(LazyList)
+  }
 
   /**
    * This function returns the list of neighbors without the block
    * positions that have already been explored. We will use it to
    * make sure that we don't explore circular paths.
    */
+  //  def newNeighborsOnly(neighbors: LazyList[(Block, List[Move])],
+  //                       explored: Set[Block]): LazyList[(Block, List[Move])] = ???
+
   def newNeighborsOnly(neighbors: LazyList[(Block, List[Move])],
-                       explored: Set[Block]): LazyList[(Block, List[Move])] = ???
+                       explored: Set[Block]): LazyList[(Block, List[Move])] =
+    (for {
+      n <- neighbors
+      if !explored.contains(n._1)
+    } yield n)
+      .to(LazyList)
 
   /**
    * The function `from` returns the lazy list of all possible paths

@@ -38,6 +38,27 @@ class BloxorzSuite {
     val optsolution = List(Right, Right, Down, Right, Right, Right, Down)
   }
 
+  @Test def `jaakko - neighborsWithHistory level 1`: Unit =
+    new Level1 {
+      assertEquals(neighborsWithHistory(Block(Pos(1, 1), Pos(1, 1)), List(Left, Up)).toSet,
+        Set(
+          (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
+          (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
+        ))
+    }
+
+  @Test def `jaakko - newNeighborsOnly level 1`: Unit =
+    new Level1 {
+      assertEquals(newNeighborsOnly(
+        Set(
+          (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
+          (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
+        ).to(LazyList),
+
+        Set(Block(Pos(1, 2), Pos(1, 3)), Block(Pos(1, 1), Pos(1, 1)))
+      ),
+        Set((Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))).to(LazyList))
+    }
 
   @Test def `terrain function level 1 (10pts)`: Unit =
     new Level1 {

@@ -71,19 +71,39 @@ trait Solver extends GameDef {
    * of different paths - the implementation should naturally
    * construct the correctly sorted lazy list.
    */
-  def from(initial: LazyList[(Block, List[Move])],
-           explored: Set[Block]): LazyList[(Block, List[Move])] = ???
+//  def from(initial: LazyList[(Block, List[Move])],
+//           explored: Set[Block]): LazyList[(Block, List[Move])] = ???
+  def from(initial: LazyList[(Block, List[Move])], explored: Set[Block]): LazyList[(Block, List[Move])] = {
+    @scala.annotation.tailrec
+    def loop(initial: LazyList[(Block, List[Move])], explored: Set[Block], acc: LazyList[(Block, List[Move])]): LazyList[(Block, List[Move])] = {
+
+      val newNeighbors = newNeighborsOnly(initial.flatMap(elem => neighborsWithHistory(elem._1, elem._2)), explored)
+      //    println(s"New neighbors:\n\t${newNeighbors.toList.mkString("\n\t")}")
+
+      newNeighbors match {
+        case LazyList() =>
+          val neighbors = acc.reverse
+//          println("Done:\n\t" + neighbors.toList.mkString("\n\t"))
+          neighbors
+        case l => loop(l, explored ++ newNeighbors.map(_._1), newNeighbors ++ acc)
+      }
+    }
+
+    loop(initial, explored, LazyList.empty)
+  }
 
   /**
    * The lazy list of all paths that begin at the starting block.
    */
-  lazy val pathsFromStart: LazyList[(Block, List[Move])] = ???
+//  lazy val pathsFromStart: LazyList[(Block, List[Move])] = ???
+  lazy val pathsFromStart: LazyList[(Block, List[Move])] = from(LazyList((startBlock, Nil)), Set.empty)
 
   /**
    * Returns a lazy list of all possible pairs of the goal block along
    * with the history how it was reached.
    */
-  lazy val pathsToGoal: LazyList[(Block, List[Move])] = ???
+//  lazy val pathsToGoal: LazyList[(Block, List[Move])] = ???
+  lazy val pathsToGoal: LazyList[(Block, List[Move])] = pathsFromStart filter(pair => done(pair._1))
 
   /**
    * The (or one of the) shortest sequence(s) of moves to reach the
@@ -93,5 +113,16 @@ trait Solver extends GameDef {
    * the first move that the player should perform from the starting
    * position.
    */
-  lazy val solution: List[Move] = ???
+  //  lazy val solution: List[Move] = ???
+  lazy val solution: List[Move] = {
+    pathsToGoal match {
+      case LazyList() => List()
+      case solutions =>
+//        println("Paths to goal:\n\t" + solutions.toList.mkString("\n\t"))
+        solutions.groupBy(_._2.length) // CHECK THIS
+          .toList.sortBy(_._1) // sort by Move length
+          .map(elem => elem._2) // map to
+          .head.head._2
+    }
+  }
 }

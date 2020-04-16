@@ -78,14 +78,18 @@ trait EncoderInstances {
 
   /** An encoder for `Int` values */
   implicit val intEncoder: Encoder[Int] =
-    Encoder.fromFunction(n => Json.Num(BigDecimal(n)))
+//    Encoder.fromFunction(n => Json.Num(BigDecimal(n)))
+    Encoder.fromFunction(n => Json.Num(n))
 
   /** An encoder for `String` values */
   implicit val stringEncoder: Encoder[String] =
-    ??? // TODO Implement the `Encoder[String]` instance
+//    ??? // TODO Implement the `Encoder[String]` instance
+  Encoder.fromFunction(s => Json.Str(s))
 
   /** An encoder for `Boolean` values */
   // TODO Define an implicit value of type `Encoder[Boolean]`
+  implicit val boolEncoder: Encoder[Boolean] =
+  Encoder.fromFunction(b => Json.Bool(b))
 
   /**
     * Encodes a list of values of type `A` into a JSON array containing
@@ -188,12 +192,18 @@ trait DecoderInstances {
 
   /** A decoder for `Int` values. Hint: use the `isValidInt` method of `BigDecimal`. */
   // TODO Define an implicit value of type `Decoder[Int]`
+  implicit val intDecoder: Decoder[Int] =
+  Decoder.fromFunction { case Json.Num(n) => if (n.isValidInt) Some(n.toInt) else None } // TODO: compiler warning
 
   /** A decoder for `String` values */
   // TODO Define an implicit value of type `Decoder[String]`
+  implicit val stringDecoder: Decoder[String] =
+  Decoder.fromPartialFunction { case Json.Str(s) => s }
 
   /** A decoder for `Boolean` values */
   // TODO Define an implicit value of type `Decoder[Boolean]`
+  implicit val boolDecoder: Decoder[Boolean] =
+  Decoder.fromPartialFunction { case Json.Bool(b) => b }
 
   /**
     * A decoder for JSON arrays. It decodes each item of the array
@@ -201,9 +211,7 @@ trait DecoderInstances {
     * if all the JSON array items are successfully decoded.
     */
   implicit def listDecoder[A](implicit decoder: Decoder[A]): Decoder[List[A]] =
-    Decoder.fromFunction {
-      ???
-    }
+    Decoder.fromFunction { case Json.Arr(xs) => Option(xs.map(decoder.decode).map(_.get)) }
 
   /**
     * A decoder for JSON objects. It decodes the value of a field of
